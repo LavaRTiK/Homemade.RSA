@@ -42,22 +42,24 @@ namespace Homemade.RSA
             BigInteger x = 0;
             BigInteger y = 0;
             BigInteger e = fermaPass[rnd.Next(0,fermaPass.Count()-1)];
+            Console.WriteLine("e:" + e);
+            Console.WriteLine("phi" + phi);
             gcdExtended(e, phi, ref x, ref y);
-            BigInteger d = y;
+            // текст на блоки не больше длиной ключа e или n так и не понял 
+            BigInteger d = x;
+            if (d < 0)
+            {
+                d += phi;
+            }
             BigInteger m = new BigInteger(_m);
             Console.WriteLine("собщения :" + m);
             BigInteger encrypt = BigInteger.ModPow(m,e,n);
-            //Console.WriteLine(encrypt);
+            Console.WriteLine("encrypt :" + encrypt);
             Console.WriteLine("");
             BigInteger decrtypt = BigInteger.ModPow(encrypt, d, n);
             Console.WriteLine("Розшифр :" + decrtypt);
-
             //publick (e,n)
             //privatik (d,n)
-
-
-
-
             Console.WriteLine("end");
         }
         private BigInteger RandomBigIntegerPrimeFill(int bits)
