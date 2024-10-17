@@ -24,8 +24,8 @@ namespace Homemade.RSA
             //текст шифруеться в байти utf-8 там уже он ложиться под модуль 
             Random rnd = new Random();
             Console.WriteLine("dasd");
-            BigInteger p = RandomBigIntegerPrimeFill(248);
-            BigInteger q = RandomBigIntegerPrimeFill(248);
+            BigInteger p = RandomBigIntegerPrimeFill(256);
+            BigInteger q = RandomBigIntegerPrimeFill(256);
             BigInteger n = p * q;
             BigInteger phi = (p-1)*(q-1);
             Console.WriteLine(p);
@@ -68,14 +68,15 @@ namespace Homemade.RSA
         {
             if (!File.Exists("Encrypt.txt"))
             {
-                File.Create("Encrypt.txt");
+                File.Create("Encrypt.txt").Close();
             }
             using (StreamWriter sw = new StreamWriter("Encrypt.txt"))
             {
-                BigInteger salt = 255;
+                BigInteger salt = 320;
                 foreach (var b in text)
                 {
-                    salt = (salt + b) % n;
+                    salt = (b + salt + n) % n;
+                    Console.WriteLine("Записался байт" + salt + "А был :" + b);
                     sw.WriteLine(BigInteger.ModPow(salt, e, n));
                 }
             }
@@ -84,9 +85,8 @@ namespace Homemade.RSA
         {
             if (!File.Exists("decrypt.txt"))
             {
-                File.Create("decrypt.txt");
+                File.Create("decrypt.txt").Close();
             }
-            string decryptText = "";
             using (StreamReader sr = new StreamReader("Encrypt.txt"))
             {
                 int blockCount = File.ReadLines("Encrypt.txt").Count();
@@ -100,12 +100,22 @@ namespace Homemade.RSA
                     //text[i] = byte.Parse(bigInteger.ToString());
                     list.Add(bigInteger);
                 }
-                BigInteger salt = 255;
-                for (int i = 0; i > list.Count-1; i++)
+                BigInteger salt = 320;
+                for (int i = 0; i < list.Count; i++)
                 {
-                    salt = (list[i]-salt) % n;
-                    text[i] = byte.Parse(salt.ToString());
+                    if (i == 0)
+                    {
+                        salt = (list[i] - salt) % n;
+                    }
+                    else
+                    {
+                        salt = (list[i] - list[i-1]) % n;
+                    }
+                    text[i] = byte.Parse((salt).ToString());
+                    Console.WriteLine("выход :" + (salt));
                 }
+
+                File.WriteAllBytes("decrypt.txt",text);
             }
             return "";
         }
