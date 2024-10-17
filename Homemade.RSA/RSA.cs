@@ -24,8 +24,8 @@ namespace Homemade.RSA
             //текст шифруеться в байти utf-8 там уже он ложиться под модуль 
             Random rnd = new Random();
             Console.WriteLine("dasd");
-            BigInteger p = RandomBigIntegerPrimeFill(5);
-            BigInteger q = RandomBigIntegerPrimeFill(5);
+            BigInteger p = RandomBigIntegerPrimeFill(248);
+            BigInteger q = RandomBigIntegerPrimeFill(248);
             BigInteger n = p * q;
             BigInteger phi = (p-1)*(q-1);
             Console.WriteLine(p);
@@ -54,13 +54,60 @@ namespace Homemade.RSA
             BigInteger m = new BigInteger(_m);
             Console.WriteLine("собщения :" + m);
             BigInteger encrypt = BigInteger.ModPow(m,e,n);
+            Encrypt(_m, e, n);
             Console.WriteLine("encrypt :" + encrypt);
-            Console.WriteLine("");
             BigInteger decrtypt = BigInteger.ModPow(encrypt, d, n);
             Console.WriteLine("Розшифр :" + decrtypt);
+            string test = Decrypt(d,n);
+            //test block RSA
             //publick (e,n)
             //privatik (d,n)
             Console.WriteLine("end");
+        }
+        public void Encrypt(byte[] text,BigInteger e, BigInteger n)
+        {
+            if (!File.Exists("Encrypt.txt"))
+            {
+                File.Create("Encrypt.txt");
+            }
+            using (StreamWriter sw = new StreamWriter("Encrypt.txt"))
+            {
+                BigInteger salt = 255;
+                foreach (var b in text)
+                {
+                    salt = (salt + b) % n;
+                    sw.WriteLine(BigInteger.ModPow(salt, e, n));
+                }
+            }
+        }
+        public string Decrypt(BigInteger d, BigInteger n)
+        {
+            if (!File.Exists("decrypt.txt"))
+            {
+                File.Create("decrypt.txt");
+            }
+            string decryptText = "";
+            using (StreamReader sr = new StreamReader("Encrypt.txt"))
+            {
+                int blockCount = File.ReadLines("Encrypt.txt").Count();
+                byte[] text = new byte[blockCount];
+                //BigInteger temp = 255;
+                List <BigInteger> list = new List <BigInteger>();
+                for (int i = 0; i < blockCount; i++)
+                {
+                    BigInteger bigInteger = BigInteger.ModPow(BigInteger.Parse(sr.ReadLine()),d,n);
+                    //temp = (temp - bigInteger) % n;
+                    //text[i] = byte.Parse(bigInteger.ToString());
+                    list.Add(bigInteger);
+                }
+                BigInteger salt = 255;
+                for (int i = 0; i > list.Count-1; i++)
+                {
+                    salt = (list[i]-salt) % n;
+                    text[i] = byte.Parse(salt.ToString());
+                }
+            }
+            return "";
         }
         private BigInteger RandomBigIntegerPrimeFill(int bits)
         {
