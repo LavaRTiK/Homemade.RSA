@@ -18,7 +18,8 @@ namespace Homemade.RSA
             string pathIn = @"Input.txt";
             if (!File.Exists(pathIn))
             {
-                File.Create(pathIn);
+                File.Create(pathIn).Close();
+                File.WriteAllText(pathIn, "test how to work");
             }
             byte[] _m = File.ReadAllBytes(pathIn);
             //текст шифруеться в байти utf-8 там уже он ложиться под модуль 
